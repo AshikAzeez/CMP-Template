@@ -1,0 +1,26 @@
+{
+  "activeEnvironment": "dev",
+  "environments": {
+    "dev": {
+      "baseUrl": "https://mock.local/",
+      "enableNetworkLogs": true,
+      "useMockData": true,
+      "useMockEngine": true,
+      "enableAuth": false
+    },
+    "staging": {
+      "baseUrl": "https://staging.api.example.com/",
+      "enableNetworkLogs": true,
+      "useMockData": false,
+      "useMockEngine": false,
+      "enableAuth": true
+    },
+    "prod": {
+      "baseUrl": "https://api.example.com/",
+      "enableNetworkLogs": false,
+      "useMockData": false,
+      "useMockEngine": false,
+      "enableAuth": true
+    }
+  }
+}
