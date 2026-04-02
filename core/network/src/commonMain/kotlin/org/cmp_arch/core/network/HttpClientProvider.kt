@@ -37,8 +37,8 @@ fun createHttpClient(
             MockEngine { request ->
                 val path = request.url.encodedPath
                 when {
-                    path.endsWith("/v1/articles") || path == "/v1/articles" -> {
-                        val payload = resourceLoader.readText(config.mockArticlesPath) ?: "[]"
+                    path.endsWith("/v1/template/items") || path == "/v1/template/items" -> {
+                        val payload = resourceLoader.readText(config.mockTemplateItemsPath) ?: "[]"
                         respond(
                             content = payload,
                             status = HttpStatusCode.OK,

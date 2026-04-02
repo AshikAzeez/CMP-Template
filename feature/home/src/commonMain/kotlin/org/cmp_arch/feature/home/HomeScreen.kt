@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -19,11 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImage
 import org.cmp_arch.core.composeutils.screenHorizontalPadding
 import org.cmp_arch.core.ui.ErrorState
 import org.cmp_arch.core.ui.LoadingState
@@ -34,7 +33,6 @@ import org.koin.core.context.GlobalContext
 
 @Composable
 fun HomeRoute(
-    onArticleRequested: (String) -> Unit,
     onSampleRequested: () -> Unit,
 ) {
     val viewModel: HomeViewModel = remember {
@@ -46,7 +44,6 @@ fun HomeRoute(
     LaunchedEffect(viewModel) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is HomeEffect.NavigateToArticle -> onArticleRequested(effect.articleId)
                 HomeEffect.NavigateToSample -> onSampleRequested()
                 is HomeEffect.ShowMessage -> snackbars.showSnackbar(effect.message)
             }
@@ -69,11 +66,11 @@ private fun HomeScreen(
     Scaffold(
         topBar = {
             DsTopAppBar(
-                title = "News",
+                title = "Home Template",
                 actions = {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DsPrimaryButton(text = "Retry") { onIntent(HomeIntent.RetryLoad) }
                         DsPrimaryButton(text = "Sample") { onIntent(HomeIntent.OpenSample) }
-                        DsPrimaryButton(text = "Refresh") { onIntent(HomeIntent.Refresh) }
                     }
                 },
             )
@@ -93,7 +90,7 @@ private fun HomeScreen(
             }
 
             else -> {
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(contentPadding)
@@ -101,17 +98,29 @@ private fun HomeScreen(
                         .padding(vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(
-                        items = state.items,
-                        key = { it.id },
-                    ) { article ->
-                        ArticleRow(
-                            article = article,
-                            onOpen = { onIntent(HomeIntent.OpenArticle(article.id)) },
-                            onToggleBookmark = {
-                                onIntent(HomeIntent.ToggleBookmark(article.id, !article.isBookmarked))
-                            },
-                        )
+                    CounterSection(
+                        count = state.counter,
+                        onIncrease = { onIntent(HomeIntent.IncrementCounter) },
+                        onDecrease = { onIntent(HomeIntent.DecrementCounter) },
+                    )
+
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        item {
+                            MviIntroCard()
+                        }
+                        items(
+                            items = state.items,
+                            key = { it.id },
+                        ) { item ->
+                            HomeTemplateItemCard(
+                                item = item,
+                                isSelected = state.selectedItemId == item.id,
+                                onSelect = { onIntent(HomeIntent.SelectItem(item.id)) },
+                            )
+                        }
                     }
                 }
             }
@@ -120,55 +129,104 @@ private fun HomeScreen(
 }
 
 @Composable
-private fun ArticleRow(
-    article: ArticleUiModel,
-    onOpen: () -> Unit,
-    onToggleBookmark: () -> Unit,
+private fun CounterSection(
+    count: Int,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit,
+) {
+    DsSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "MVI Counter: $count",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                DsPrimaryButton(text = "-1", onClick = onDecrease)
+                DsPrimaryButton(text = "+1", onClick = onIncrease)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MviIntroCard() {
+    DsSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                text = "MVI Blueprint",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = "1) UI sends Intent",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "2) ViewModel updates immutable State",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = "3) One-off actions are emitted as Effect",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeTemplateItemCard(
+    item: HomeItemUiModel,
+    isSelected: Boolean,
+    onSelect: () -> Unit,
 ) {
     DsSurfaceCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onOpen),
+            .clickable(onClick = onSelect),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            AsyncImage(
-                model = article.imageUrl,
-                contentDescription = article.title,
-                modifier = Modifier
-                    .weight(0.35f)
-                    .fillMaxWidth(),
-            )
-
-            Column(
-                modifier = Modifier.weight(0.65f),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = article.title,
+                    text = item.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = article.subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = item.status,
+                    style = MaterialTheme.typography.labelMedium,
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = article.publishedAt,
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                    IconButton(onClick = onToggleBookmark) {
-                        Text(if (article.isBookmarked) "Saved" else "Save")
-                    }
-                }
+            }
+            Text(
+                text = item.description,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            if (isSelected) {
+                Text(
+                    text = "Selected",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
             }
         }
     }

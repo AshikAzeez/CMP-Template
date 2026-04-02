@@ -15,12 +15,10 @@ fun NavController.navigateToHome() {
 }
 
 fun NavGraphBuilder.homeGraph(
-    onArticleRequested: (String) -> Unit,
     onSampleRequested: () -> Unit,
 ) {
     composable(route = HOME_ROUTE) {
         HomeRoute(
-            onArticleRequested = onArticleRequested,
             onSampleRequested = onSampleRequested,
         )
     }

@@ -5,7 +5,7 @@ data class NetworkConfig(
     val enableLogs: Boolean = true,
     val enableAuth: Boolean = true,
     val useMockEngine: Boolean = false,
-    val mockArticlesPath: String = "mock/articles.json",
+    val mockTemplateItemsPath: String = "mock/template_items.json",
     val refreshPath: String = "v1/auth/refresh",
     val tokenExpirySkewSeconds: Long = 60,
 )

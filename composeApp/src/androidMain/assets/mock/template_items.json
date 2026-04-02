@@ -1,0 +1,23 @@
+[
+  {
+    "id": "mvi-intent",
+    "title": "Intent Pipeline",
+    "description": "UI emits intent and ViewModel handles all user interactions in one place.",
+    "status": "DONE",
+    "updated_at": 1773292800000
+  },
+  {
+    "id": "mvi-state",
+    "title": "Single Immutable State",
+    "description": "Expose one state object through StateFlow for predictable rendering.",
+    "status": "IN_PROGRESS",
+    "updated_at": 1773379200000
+  },
+  {
+    "id": "mvi-effect",
+    "title": "One-off Effect Channel",
+    "description": "Navigation and snackbar are emitted as effects instead of staying in state.",
+    "status": "TODO",
+    "updated_at": 1773465600000
+  }
+]

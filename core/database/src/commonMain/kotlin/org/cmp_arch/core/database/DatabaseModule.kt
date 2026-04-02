@@ -5,5 +5,5 @@ import org.koin.dsl.module
 
 fun databaseModule() = module {
     single { DatabaseFactory(get<PlatformContext>()) }
-    single<ArticleCache> { get<DatabaseFactory>().createArticleCache() }
+    single<TemplateEntityStore> { get<DatabaseFactory>().createTemplateEntityStore() }
 }
