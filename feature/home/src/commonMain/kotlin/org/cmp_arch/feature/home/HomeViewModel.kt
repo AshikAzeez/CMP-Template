@@ -9,6 +9,7 @@ import org.cmp_arch.analytics.AnalyticsEvent
 import org.cmp_arch.analytics.AnalyticsTracker
 import org.cmp_arch.core.AppResult
 import org.cmp_arch.core.MviViewModel
+import org.cmp_arch.core.ThemeSettingsStore
 import org.cmp_arch.core.asUiMessage
 import org.cmp_arch.domain.model.HomeTemplateItem
 import org.cmp_arch.domain.model.ItemStatus
@@ -19,12 +20,15 @@ class HomeViewModel(
     private val observeItems: ObserveHomeTemplateItemsUseCase,
     private val seedItems: SeedHomeTemplateItemsUseCase,
     private val analyticsTracker: AnalyticsTracker,
+    private val themeSettingsStore: ThemeSettingsStore,
 ) : MviViewModel<HomeIntent, HomeUiState, HomeEffect>(HomeUiState()) {
 
     private var collectionJob: Job? = null
+    private var themeJob: Job? = null
 
     init {
         analyticsTracker.track(AnalyticsEvent(name = "home_opened"))
+        observeThemeMode()
         dispatch(HomeIntent.InitialLoad)
     }
 
@@ -39,6 +43,7 @@ class HomeViewModel(
                 analyticsTracker.track(AnalyticsEvent(name = "sample_open_requested"))
                 postEffect(HomeEffect.NavigateToSample)
             }
+            is HomeIntent.SetThemeMode -> onSetThemeMode(intent)
         }
     }
 
@@ -74,6 +79,27 @@ class HomeViewModel(
                     postEffect(HomeEffect.ShowMessage(message))
                 }
             }
+        }
+    }
+
+    private fun observeThemeMode() {
+        if (themeJob != null) return
+        themeJob = themeSettingsStore.themeMode
+            .onEach { mode ->
+                setState { it.copy(themeMode = mode) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun onSetThemeMode(intent: HomeIntent.SetThemeMode) {
+        viewModelScope.launch {
+            themeSettingsStore.setThemeMode(intent.mode)
+            analyticsTracker.track(
+                AnalyticsEvent(
+                    name = "theme_mode_selected",
+                    parameters = mapOf("mode" to intent.mode.name),
+                ),
+            )
         }
     }
 

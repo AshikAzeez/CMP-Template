@@ -1,6 +1,8 @@
 package org.cmp_arch.designsystem.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -37,11 +39,15 @@ fun CmpTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    ConfigureSystemBars(darkTheme = darkTheme)
-
-    MaterialTheme(
-        colorScheme = if (darkTheme) DarkScheme else LightScheme,
-        typography = Typography(),
-        content = content,
-    )
+    Crossfade(
+        targetState = darkTheme,
+        animationSpec = tween(durationMillis = 450),
+    ) { isDark ->
+        ConfigureSystemBars(darkTheme = isDark)
+        MaterialTheme(
+            colorScheme = if (isDark) DarkScheme else LightScheme,
+            typography = Typography(),
+            content = content,
+        )
+    }
 }

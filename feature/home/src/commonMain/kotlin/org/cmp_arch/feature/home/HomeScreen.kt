@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.cmp_arch.core.ThemeMode
 import org.cmp_arch.core.composeutils.screenHorizontalPadding
 import org.cmp_arch.core.ui.ErrorState
 import org.cmp_arch.core.ui.LoadingState
@@ -103,6 +104,12 @@ private fun HomeScreen(
                         onIncrease = { onIntent(HomeIntent.IncrementCounter) },
                         onDecrease = { onIntent(HomeIntent.DecrementCounter) },
                     )
+                    ThemeSwitcherSection(
+                        selectedMode = state.themeMode,
+                        onSystem = { onIntent(HomeIntent.SetThemeMode(ThemeMode.SYSTEM)) },
+                        onLight = { onIntent(HomeIntent.SetThemeMode(ThemeMode.LIGHT)) },
+                        onDark = { onIntent(HomeIntent.SetThemeMode(ThemeMode.DARK)) },
+                    )
 
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -123,6 +130,53 @@ private fun HomeScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ThemeSwitcherSection(
+    selectedMode: ThemeMode,
+    onSystem: () -> Unit,
+    onLight: () -> Unit,
+    onDark: () -> Unit,
+) {
+    DsSurfaceCard(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = "Theme",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = "Current: ${selectedMode.name}",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                DsPrimaryButton(
+                    text = "System",
+                    modifier = Modifier.weight(1f),
+                    onClick = onSystem,
+                )
+                DsPrimaryButton(
+                    text = "Day",
+                    modifier = Modifier.weight(1f),
+                    onClick = onLight,
+                )
+                DsPrimaryButton(
+                    text = "Night",
+                    modifier = Modifier.weight(1f),
+                    onClick = onDark,
+                )
             }
         }
     }

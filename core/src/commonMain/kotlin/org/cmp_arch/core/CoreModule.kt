@@ -10,4 +10,5 @@ fun coreModule(platformContext: PlatformContext) = module {
     single<DataStore<Preferences>> { createTemplateDataStore(get()) }
     single { TemplatePreferencesStore(get()) }
     single<AuthSessionStore> { get<TemplatePreferencesStore>() }
+    single<ThemeSettingsStore> { get<TemplatePreferencesStore>() }
 }

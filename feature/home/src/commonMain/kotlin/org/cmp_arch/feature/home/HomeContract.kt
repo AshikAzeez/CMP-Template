@@ -1,6 +1,7 @@
 package org.cmp_arch.feature.home
 
 import androidx.compose.runtime.Immutable
+import org.cmp_arch.core.ThemeMode
 
 sealed interface HomeIntent {
     data object InitialLoad : HomeIntent
@@ -9,6 +10,7 @@ sealed interface HomeIntent {
     data object DecrementCounter : HomeIntent
     data class SelectItem(val itemId: String) : HomeIntent
     data object OpenSample : HomeIntent
+    data class SetThemeMode(val mode: ThemeMode) : HomeIntent
 }
 
 @Immutable
@@ -18,6 +20,7 @@ data class HomeUiState(
     val items: List<HomeItemUiModel> = emptyList(),
     val selectedItemId: String? = null,
     val errorMessage: String? = null,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
 )
 
 sealed interface HomeEffect {
