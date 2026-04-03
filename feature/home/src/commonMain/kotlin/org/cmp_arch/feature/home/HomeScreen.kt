@@ -30,14 +30,14 @@ import org.cmp_arch.core.ui.LoadingState
 import org.cmp_arch.designsystem.components.DsPrimaryButton
 import org.cmp_arch.designsystem.components.DsSurfaceCard
 import org.cmp_arch.designsystem.components.DsTopAppBar
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun HomeRoute(
     onSampleRequested: () -> Unit,
 ) {
     val viewModel: HomeViewModel = remember {
-        GlobalContext.get().get()
+        KoinPlatform.getKoin().get()
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbars = remember { SnackbarHostState() }

@@ -1,5 +1,6 @@
 package org.cmp_arch.core.network
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import org.cmp_arch.core.PlatformContext
 import platform.Foundation.NSBundle
 import platform.Foundation.NSString
@@ -8,6 +9,7 @@ import platform.Foundation.stringWithContentsOfFile
 actual class NetworkResourceLoader actual constructor(
     context: PlatformContext,
 ) {
+    @OptIn(ExperimentalForeignApi::class)
     actual fun readText(path: String): String? {
         val dotIndex = path.lastIndexOf('.')
         val fileName = if (dotIndex > 0) path.substring(0, dotIndex) else path

@@ -2,6 +2,7 @@ package org.cmp_arch.core
 
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 
 actual class PlatformContext
@@ -11,7 +12,7 @@ actual fun dataStoreAbsolutePath(context: PlatformContext): String {
         directory = NSDocumentDirectory,
         inDomains = NSUserDomainMask,
     )
-    val directory = urls.firstOrNull()?.path ?: "."
+    val directory = (urls.firstOrNull() as? NSURL)?.path ?: "."
     return "$directory/cmp_arch.preferences_pb"
 }
 

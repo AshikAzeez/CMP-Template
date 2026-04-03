@@ -1,6 +1,13 @@
 package org.cmp_arch.project
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -14,12 +21,12 @@ import org.cmp_arch.feature.home.HOME_ROUTE
 import org.cmp_arch.feature.home.homeGraph
 import org.cmp_arch.feature.home.sampleGraph
 import org.cmp_arch.feature.home.SAMPLE_ROUTE
-import org.koin.core.context.GlobalContext
+import org.koin.mp.KoinPlatform
 
 @Composable
 fun App() {
     val navController = rememberNavController()
-    val themeSettingsStore: ThemeSettingsStore = remember { GlobalContext.get().get() }
+    val themeSettingsStore: ThemeSettingsStore = remember { KoinPlatform.getKoin().get() }
     val themeMode by themeSettingsStore.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
     val isDarkTheme = when (themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -28,15 +35,89 @@ fun App() {
     }
 
     CmpTheme(darkTheme = isDarkTheme) {
-        NavHost(
-            navController = navController,
-            startDestination = HOME_ROUTE,
-        ) {
-            homeGraph(onSampleRequested = {
-                navController.navigate(SAMPLE_ROUTE)
-            })
-
-            sampleGraph(onBackRequested = { navController.popBackStack() })
+        if (isIosPlatform) {
+            IosNavHost(navController = navController)
+        } else {
+            AndroidNavHost(navController = navController)
         }
     }
 }
+
+@Composable
+private fun AndroidNavHost(navController: androidx.navigation.NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = HOME_ROUTE,
+    ) {
+        homeGraph(onSampleRequested = {
+            navController.navigate(SAMPLE_ROUTE) {
+                launchSingleTop = true
+            }
+        })
+
+        sampleGraph(onBackRequested = { navController.popBackStack() })
+    }
+}
+
+@Composable
+private fun IosNavHost(navController: androidx.navigation.NavHostController) {
+    NavHost(
+        navController = navController,
+        startDestination = HOME_ROUTE,
+        enterTransition = { iosRouteEnterTransition() },
+        exitTransition = { iosRouteExitTransition() },
+        popEnterTransition = { iosRoutePopEnterTransition() },
+        popExitTransition = { iosRoutePopExitTransition() },
+    ) {
+        homeGraph(onSampleRequested = {
+            navController.navigate(SAMPLE_ROUTE) {
+                launchSingleTop = true
+            }
+        })
+
+        sampleGraph(onBackRequested = { navController.popBackStack() })
+    }
+}
+
+private fun AnimatedContentTransitionScope<*>.iosRouteEnterTransition(): EnterTransition {
+    return slideInHorizontally(
+            initialOffsetX = { fullWidth -> fullWidth },
+            animationSpec = tween(
+                durationMillis = IOS_NAV_DURATION_MS,
+                easing = IOS_NAV_EASING,
+            ),
+        )
+}
+
+private fun AnimatedContentTransitionScope<*>.iosRouteExitTransition(): ExitTransition {
+    return slideOutHorizontally(
+            targetOffsetX = { fullWidth -> -(fullWidth / 3) },
+            animationSpec = tween(
+                durationMillis = IOS_NAV_DURATION_MS,
+                easing = IOS_NAV_EASING,
+            ),
+        )
+}
+
+private fun AnimatedContentTransitionScope<*>.iosRoutePopEnterTransition(): EnterTransition {
+    return slideInHorizontally(
+            initialOffsetX = { fullWidth -> -(fullWidth / 3) },
+            animationSpec = tween(
+                durationMillis = IOS_NAV_DURATION_MS,
+                easing = IOS_NAV_EASING,
+            ),
+        )
+}
+
+private fun AnimatedContentTransitionScope<*>.iosRoutePopExitTransition(): ExitTransition {
+    return slideOutHorizontally(
+            targetOffsetX = { fullWidth -> fullWidth },
+            animationSpec = tween(
+                durationMillis = IOS_NAV_DURATION_MS,
+                easing = IOS_NAV_EASING,
+            ),
+        )
+}
+
+private const val IOS_NAV_DURATION_MS = 360
+private val IOS_NAV_EASING = CubicBezierEasing(0.32f, 0.72f, 0f, 1f)

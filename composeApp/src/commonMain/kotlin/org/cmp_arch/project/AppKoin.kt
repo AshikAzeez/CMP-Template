@@ -10,36 +10,34 @@ import org.cmp_arch.core.network.networkModule
 import org.cmp_arch.data.dataModule
 import org.cmp_arch.domain.domainModule
 import org.cmp_arch.feature.home.homeFeatureModule
-import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 
-private val koinLock = Any()
+private var isKoinStarted = false
 
 fun initKoin(
     platformContext: PlatformContext,
     config: AppConfig = resolveAppConfig(platformContext),
 ) {
-    synchronized(koinLock) {
-        if (GlobalContext.getOrNull() != null) return
+    if (isKoinStarted) return
 
-        startKoin {
-            modules(
-                coreModule(platformContext),
-                loggerModule(enableDebug = config.enableNetworkLogs),
-                networkModule(
-                    NetworkConfig(
-                        baseUrl = config.baseUrl,
-                        enableLogs = config.enableNetworkLogs,
-                        enableAuth = config.enableAuth,
-                        useMockEngine = config.useMockEngine,
-                    ),
+    startKoin {
+        modules(
+            coreModule(platformContext),
+            loggerModule(enableDebug = config.enableNetworkLogs),
+            networkModule(
+                NetworkConfig(
+                    baseUrl = config.baseUrl,
+                    enableLogs = config.enableNetworkLogs,
+                    enableAuth = config.enableAuth,
+                    useMockEngine = config.useMockEngine,
                 ),
-                databaseModule(),
-                domainModule,
-                dataModule(useMockData = config.useMockData),
-                analyticsModule(),
-                homeFeatureModule,
-            )
-        }
+            ),
+            databaseModule(),
+            domainModule,
+            dataModule(useMockData = config.useMockData),
+            analyticsModule(),
+            homeFeatureModule,
+        )
     }
+    isKoinStarted = true
 }
